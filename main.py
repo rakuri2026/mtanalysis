@@ -94,6 +94,15 @@ if uploaded_file is not None:
 else:
     st.write("Please upload a CSV file.")
 
+
+
+
+stemmapping = st.file_uploader("Upload TreeLoc.csv", type="csv")
+if uploaded_file is not None:
+    df = pd.read_csv(stemmapping)
+    st.write(df.head())
+else:
+    st.info("Please upload the TreeLoc.csv file.")
 #stemmapping = files.upload()
 df = pd.read_csv('TreeLoc.csv')
 
@@ -339,5 +348,6 @@ def download_gdf_zip(gdf, filename):
 if st.button('Download Shapefile'):
 
     download_gdf_zip(result_gdf, "result_gdf")
+
 
 
