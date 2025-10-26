@@ -24,7 +24,7 @@ session_info.show()
 
 session_info.show(write_req_file=True, req_file_name='requirements.txt')'''
 
-!pip freeze > requirements.txt
+#!pip freeze > requirements.txt
 
 """Hardcoded constant value."""
 
@@ -337,4 +337,5 @@ def download_gdf_zip(gdf, filename):
 
 # Example usage within your Streamlit app
 if st.button('Download Shapefile'):
+
     download_gdf_zip(result_gdf, "result_gdf")
