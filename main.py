@@ -92,7 +92,7 @@ else:
     st.info("Please upload the TreeLoc.csv file.")
 
 # 🚨 IMPORTANT: Remove or comment out the problematic line below:
-# df = pd.read_csv('TreeLoc.csv')
+df = pd.read_csv('TreeLoc.csv')
 
 # --- Conditional Execution ---
 # Now, wrap the rest of your code that depends on 'df' in a check to ensure 'df' is not None.
@@ -339,6 +339,7 @@ def download_gdf_zip(gdf, filename):
 if st.button('Download Shapefile'):
 
     download_gdf_zip(result_gdf, "result_gdf")
+
 
 
 
