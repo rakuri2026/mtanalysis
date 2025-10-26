@@ -94,7 +94,7 @@ if uploaded_file is not None:
 else:
     st.write("Please upload a CSV file.")
 
-stemmapping = files.upload()
+#stemmapping = files.upload()
 df = pd.read_csv('TreeLoc.csv')
 
 joined_df = df.merge(sppVal, left_on='species', right_on='scientific_name')
@@ -339,4 +339,5 @@ def download_gdf_zip(gdf, filename):
 if st.button('Download Shapefile'):
 
     download_gdf_zip(result_gdf, "result_gdf")
+
 
