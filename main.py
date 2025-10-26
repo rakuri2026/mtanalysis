@@ -1,6 +1,4 @@
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-import matplotlib.lines as mlines
 import zipfile
 import math
 import pandas as pd
@@ -8,7 +6,10 @@ import streamlit as st
 import geopandas as gpd
 import pyproj
 from shapely.geometry import Polygon, Point, box
-from io import BytesIO  # Added for in-memory file handling
+from io import BytesIO
+import os
+import shutil
+from datetime import datetime
 
 # Hardcoded constant value
 data = {
@@ -65,18 +66,41 @@ if stemmapping is not None:
         df = pd.read_csv(stemmapping)
         st.write("Uploaded Data Preview:")
         st.write(df.head())
+        # Validate required columns and data types
+        required_columns = ['species', 'dia_cm', 'height_m', 'class', 'LONGITUDE', 'LATITUDE']
+        if not all(col in df.columns for col in required_columns):
+            st.error(f"Missing required columns. Expected: {required_columns}")
+            st.stop()
+        if not all(df['dia_cm'].apply(lambda x: isinstance(x, (int, float)))):
+            st.error("Column 'dia_cm' contains non-numeric values.")
+            st.stop()
+        if not all(df['height_m'].apply(lambda x: isinstance(x, (int, float)))):
+            st.error("Column 'height_m' contains non-numeric values.")
+            st.stop()
+        if df['dia_cm'].le(0).any() or df['height_m'].le(0).any():
+            st.error("Columns 'dia_cm' and 'height_m' must contain positive values.")
+            st.stop()
     except Exception as e:
         st.error(f"An error occurred while reading the file: {e}")
+        st.stop()
 else:
     st.info("Please upload the TreeLoc.csv file.")
 
-# Conditional execution: Only proceed if df is not None
+# Conditional execution
 if df is not None:
     # Merge with species data
-    joined_df = df.merge(sppVal, left_on='species', right_on='scientific_name')
+    joined_df = df.merge(sppVal, left_on='species', right_on='scientific_name', how='left')
+    if joined_df.empty:
+        st.error("No matching species found in the merge. Check 'species' column in TreeLoc.csv.")
+        st.stop()
     result_df = joined_df.copy()
 
     def add_calculated_columns(df):
+        df['dia_cm'] = pd.to_numeric(df['dia_cm'], errors='coerce')
+        df['height_m'] = pd.to_numeric(df['height_m'], errors='coerce')
+        if df['dia_cm'].isna().any() or df['height_m'].isna().any():
+            st.error("Invalid or missing values in 'dia_cm' or 'height_m'.")
+            st.stop()
         df['stem_volume'] = (df['a'] + df['b'] * df['dia_cm'].apply(lambda x: math.log(x)) + df['c'] * df['height_m'].apply(lambda x: math.log(x))).apply(math.exp) / 1000
         df['branch_ratio'] = df['dia_cm'].apply(lambda x: 0.1 if x < 10 else 0.2)
         df['branch_volume'] = df['stem_volume'] * df['branch_ratio']
@@ -90,12 +114,11 @@ if df is not None:
         df['firewood_chatta'] = df['firewood_m3'] * 0.105944
         return df
 
-    # Apply calculations
     result_df = add_calculated_columns(df=result_df)
 
     # Drop unnecessary columns
     columns_to_drop = ['SN', 'scientific_name', 'a', 'b', 'c', 'a1', 'b1', 's', 'm', 'bg']
-    result_df = result_df.drop(columns=columns_to_drop)
+    result_df = result_df.drop(columns=[col for col in columns_to_drop if col in result_df.columns])
 
     # Download result_df as CSV
     csv_data = result_df.to_csv(index=False)
@@ -123,9 +146,17 @@ if df is not None:
     # Create grid
     spacing_meters = grid_spacing
     center_lat = (ymin + ymax) / 2
+    if math.cos(math.radians(center_lat)) == 0:
+        st.error("Invalid center latitude for grid spacing calculation.")
+        st.stop()
     spacing_degrees = spacing_meters / (111320 * math.cos(math.radians(center_lat)))
-    x_coords = [xmin + i * spacing_degrees for i in range(int((xmax - xmin) / spacing_degrees) + 1)]
-    y_coords = [ymin + i * spacing_degrees for i in range(int((ymax - ymin) / spacing_degrees) + 1)]
+    st.write(f"spacing_degrees: {spacing_degrees}")
+    num_x = int((xmax - xmin) / spacing_degrees) + 1
+    num_y = int((ymax - ymin) / spacing_degrees) + 1
+    x_coords = [xmin + i * spacing_degrees for i in range(num_x)]
+    y_coords = [ymin + i * spacing_degrees for i in range(num_y)]
+    st.write(f"x_coords: {x_coords}")
+    st.write(f"y_coords: {y_coords}")
     polygons = [Polygon([(x, y), (x + spacing_degrees, y), (x + spacing_degrees, y + spacing_degrees), (x, y + spacing_degrees)]) 
                 for x in x_coords for y in y_coords]
     grid_gdf = gpd.GeoDataFrame({'geometry': polygons}, crs='EPSG:4326')
@@ -158,6 +189,7 @@ if df is not None:
                 result_gdf_proj = result_gdf.to_crs(projected_crs)
                 joined_gdf = gpd.sjoin_nearest(centroid_gdf_proj, result_gdf_proj, how='left', distance_col='distance')
                 nearest_tree_indices = joined_gdf.groupby(joined_gdf.index)['distance'].idxmin()
+                result_gdf = result_gdf.copy()  # Avoid SettingWithCopyWarning
                 result_gdf['remark'] = 'Felling Tree'
                 result_gdf.loc[nearest_tree_indices, 'remark'] = 'Mother Tree'
 
@@ -166,34 +198,30 @@ if df is not None:
                 st.write(result_gdf)
 
                 # Download result_gdf as CSV
+                def download_csv(gdf, filename):
+                    csv = gdf.to_csv(index=False)
+                    st.download_button(
+                        label=f"Download {filename}.csv",
+                        data=csv,
+                        file_name=f"{filename}.csv",
+                        mime="text/csv"
+                    )
                 download_csv(result_gdf, "result_gdf")
 
                 # Download result_gdf as zipped shapefile
                 def download_gdf_zip(gdf, filename):
-                    """Downloads a GeoDataFrame as a zipped shapefile using Streamlit."""
-                    import fiona
-                    import os
-                    from datetime import datetime
-                    import shutil
-
-                    # Create a temporary directory
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                     temp_dir = f"shapefile_{timestamp}"
                     os.makedirs(temp_dir, exist_ok=True)
                     shapefile_path = os.path.join(temp_dir, filename)
-
                     try:
-                        # Write GeoDataFrame to shapefile in temporary directory
                         gdf.to_file(shapefile_path, driver="ESRI Shapefile")
-
-                        # Create in-memory zip file
                         zip_buffer = BytesIO()
                         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
                             for ext in ['.shp', '.shx', '.dbf', '.prj']:
                                 file_path = f"{shapefile_path}{ext}"
                                 if os.path.exists(file_path):
                                     zipf.write(file_path, f"{filename}{ext}")
-
                         zip_buffer.seek(0)
                         st.download_button(
                             label=f"Download {filename}.zip",
@@ -202,7 +230,6 @@ if df is not None:
                             mime="application/zip"
                         )
                     finally:
-                        # Clean up temporary files
                         if os.path.exists(temp_dir):
                             shutil.rmtree(temp_dir)
 
