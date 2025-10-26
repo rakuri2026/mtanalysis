@@ -97,17 +97,34 @@ else:
 
 
 
+# Remove the first uploader section entirely if it's redundant:
+# st.title("Stem mapping file (CSV File Uploader)")
+# uploaded_file = st.file_uploader("Choose stem mapping CSV file", type="csv")
+# ... (rest of the first section)
+
+# --- Keep and correct this section ---
 stemmapping = st.file_uploader("Upload TreeLoc.csv", type="csv")
-if uploaded_file is not None:
-    df = pd.read_csv(stemmapping)
-    st.write(df.head())
+df = None # Initialize df to None
+
+if stemmapping is not None:
+    try:
+        df = pd.read_csv(stemmapping)
+        st.write(df.head())
+    except Exception as e:
+        st.error(f"An error occurred while reading the file: {e}")
 else:
     st.info("Please upload the TreeLoc.csv file.")
-#stemmapping = files.upload()
-df = pd.read_csv('TreeLoc.csv')
 
-joined_df = df.merge(sppVal, left_on='species', right_on='scientific_name')
+# 🚨 IMPORTANT: Remove or comment out the problematic line below:
+# df = pd.read_csv('TreeLoc.csv')
 
+# --- Conditional Execution ---
+# Now, wrap the rest of your code that depends on 'df' in a check to ensure 'df' is not None.
+if df is not None:
+    # --- Start of dependent code ---
+    joined_df = df.merge(sppVal, left_on='species', right_on='scientific_name')
+    # ... and so on, down to the end of the script ...
+    # --- End of dependent code ---
 """copy the joined_df as 'result_df'."""
 
 result_df = joined_df.copy()
@@ -348,6 +365,7 @@ def download_gdf_zip(gdf, filename):
 if st.button('Download Shapefile'):
 
     download_gdf_zip(result_gdf, "result_gdf")
+
 
 
 
