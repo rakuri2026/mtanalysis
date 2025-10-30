@@ -437,9 +437,9 @@ try:
 except:
     pass # Ignore if no ngrok process is running
 
-# Start Streamlit in the background
-!streamlit run app.py --server.port=8501 &>/content/logs.txt &
+# # Start Streamlit in the background
+# !streamlit run app.py --server.port=8501 &>/content/logs.txt &
 
-# Create a public URL using ngrok
-public_url = ngrok.connect(8501)
-print(f"🚀 Your Streamlit app is live at: {public_url}")
+# # Create a public URL using ngrok
+# public_url = ngrok.connect(8501)
+# print(f"🚀 Your Streamlit app is live at: {public_url}")
