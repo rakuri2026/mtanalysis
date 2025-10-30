@@ -8,7 +8,7 @@ Original file is located at
 """
 
 # Install required packages
-!pip install -q streamlit pydeck pyngrok
+#!pip install -q streamlit pydeck pyngrok
 
 # Commented out IPython magic to ensure Python compatibility.
 # %%writefile app.py
