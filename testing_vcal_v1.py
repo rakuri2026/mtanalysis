@@ -423,7 +423,7 @@ else:
     Eugenia Jambolana, Hymenodictyon excelsum, Lagerstroemia parviflora,
     Michelia champaca, Pinus roxburghii, Pinus wallichiana, Quercus spp,
     Schima wallichii, Shorea robusta, Terminalia alata, Trewia nudiflora,
-    Tsuga spp, Terai spp, Hill spp, Coniferious, Broadleaved
+    Tsuga spp, Terai spp, Hill spp
     
  csv file that will be uploaded will have these fields Example:
 forest_name, forest_block, species,dia_cm,height_m,class,longitude, latitude
