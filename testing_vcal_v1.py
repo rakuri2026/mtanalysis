@@ -415,9 +415,9 @@ if uploaded_file is not None:
         st.success("Saved `result_df_final.pkl` – load with `pd.read_pickle('result_df_final.pkl')`")
 
 else:
-    st.info("Upload CSV with at least with these names `species`, `dia_cm`, `height_m`, `class`, and coordinates.")
+    st.info("Upload CSV with at least with these names `species`, `dia_cm`, `height_m`, `class`, latitude, longitude.")
     st.code("""
-    use these scientific name when in scpeies column
+    use these scientific name in scpeies column
     scientific_name:Abies spp, Acacia catechu, Adina cardifolia, Albizia spp, Alnus nepalensis,
     Anogeissus latifolia, Bombax ceiba, Cedrela toona, Dalbergia sissoo,
     Eugenia Jambolana, Hymenodictyon excelsum, Lagerstroemia parviflora,
