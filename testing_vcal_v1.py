@@ -415,11 +415,20 @@ if uploaded_file is not None:
         st.success("Saved `result_df_final.pkl` – load with `pd.read_pickle('result_df_final.pkl')`")
 
 else:
-    st.info("Upload CSV with `species`, `dia_cm`, `height_m`, `class`, and coordinates.")
-    st.code("""Example:
-species,dia_cm,height_m,class,easting,northing
-Shorea robusta,45,25,A,500000,4649776
-Shorea robusta,42,24,A,500010,4649780
+    st.info("Upload CSV with at least with these names `species`, `dia_cm`, `height_m`, `class`, and coordinates.")
+    st.code("""
+    use these scientific name when in scpeies column
+    scientific_name:Abies spp, Acacia catechu, Adina cardifolia, Albizia spp, Alnus nepalensis,
+    Anogeissus latifolia, Bombax ceiba, Cedrela toona, Dalbergia sissoo,
+    Eugenia Jambolana, Hymenodictyon excelsum, Lagerstroemia parviflora,
+    Michelia champaca, Pinus roxburghii, Pinus wallichiana, Quercus spp,
+    Schima wallichii, Shorea robusta, Terminalia alata, Trewia nudiflora,
+    Tsuga spp, Terai spp, Hill spp, Coniferious, Broadleaved
+    
+ csv file that will be uploaded will have these fields Example:
+forest_name, forest_block, species,dia_cm,height_m,class,longitude, latitude
+Nawalpur sarswati, Block-1, Shorea robusta,45,25,2,87.2341638, 27.4631267
+Nawalpur sarswati, Block-2, Shorea robusta,65,25,1,87.2345638, 27.4661232
 """)
 
 # """#for streamlit brower code"""
