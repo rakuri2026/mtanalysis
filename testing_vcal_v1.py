@@ -426,9 +426,9 @@ else:
     Tsuga spp, Terai spp, Hill spp
     
  csv file that will be uploaded will have these fields Example:
-forest_name, forest_block, species,dia_cm,height_m,class,longitude, latitude
-Nawalpur sarswati, Block-1, Shorea robusta,45,25,2,87.2341638, 27.4631267
-Nawalpur sarswati, Block-2, Shorea robusta,65,25,1,87.2345638, 27.4661232
+forest_name,        forest_block,     species,            dia_cm,    height_m,    class,      longitude,         latitude
+sarswati,         Block-1,             Shorea robusta,    45,        25,            2,        87.2341638,     27.4631267
+sarswati,         Block-2,             Shorea robusta,    65,        25,            1,        87.2345638,     27.4661232
 """)
 
 # """#for streamlit brower code"""
